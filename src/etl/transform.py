@@ -4,6 +4,7 @@ Determinism matters: the same input must always yield the same output, or the
 idempotency test (and safe re-runs) will fail.
 """
 from __future__ import annotations
+
 import pandas as pd
 
 
