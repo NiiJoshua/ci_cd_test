@@ -1,0 +1,11 @@
+customer_id,email,country,signup_date
+1001,ama.mensah@example.com,GH,2025-01-14
+1002,KWAME.OWUSU@Example.com,gh,2025-02-03
+1003,yaw.diallo@example.com,SN,2025-02-19
+1004,adwoa.uwase@example.com,RW,2025-03-01
+1005,kofi.niyonzima@example.com,RW,2025-03-22
+1006,efua.traore@example.com,CI,2025-04-05
+1007,fatou.sarr@example.com,SN,2025-04-18
+1008,jean.bello@example.com,NG,2025-05-02
+1009,marie.okafor@example.com,NG,2025-05-20
+1010,eric.mensah@example.com,GH,2025-06-01

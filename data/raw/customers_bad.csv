@@ -1,0 +1,8 @@
+customer_id,email,country,signup_date
+2001,good.row@example.com,GH,2025-01-14
+2002,not-an-email,RW,2025-02-03
+2003,missing.country@example.com,,2025-02-19
+20X4,bad.id@example.com,SN,2025-03-01
+2005,future.date@example.com,NG,2099-03-22
+2006,dupe@example.com,GH,2025-04-05
+2006,dupe@example.com,GH,2025-04-06

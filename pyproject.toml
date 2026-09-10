@@ -1,0 +1,9 @@
+[tool.pytest.ini_options]
+markers = [
+    "integration: slower end-to-end tests that do real file I/O",
+]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

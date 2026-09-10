@@ -1,0 +1,74 @@
+# -----------------------------------------------------------------------------
+# CD — Continuous Deployment / Delivery
+#
+# Runs when code lands on main (i.e. after a PR is merged) or when you push a
+# release tag like v1.2.0. It re-checks the gate, then "deploys". The deploy
+# step here is a safe mock (it just prints what it would do) because there's no
+# real infrastructure — swap it for your real deploy command.
+#
+# Demonstrates three of the module's focus areas:
+#   * automated gating  -> the `test-gate` job must pass before `deploy` runs
+#   * versioning         -> the deployed version comes from the VERSION file / tag
+#   * rollback           -> workflow_dispatch lets you re-deploy an older version
+# -----------------------------------------------------------------------------
+name: CD
+
+on:
+  push:
+    branches: [main]          # runs after a merge to main
+    tags: ["v*"]              # ...and on release tags
+  workflow_dispatch:          # ...and a manual "Run workflow" button
+    inputs:
+      rollback_to:
+        description: "Version/tag to roll back to (e.g. v1.0.0). Leave blank for a normal deploy."
+        required: false
+        default: ""
+
+jobs:
+  # ---- Gate: never deploy untested code ------------------------------------
+  test-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Run the full test suite as the deploy gate
+        run: pytest
+
+  # ---- Deploy: only after the gate is green --------------------------------
+  deploy:
+    needs: test-gate
+    runs-on: ubuntu-latest
+    # 'environment' enables branch/required-reviewer protection in repo settings:
+    # Settings > Environments > production > Required reviewers. That is how you
+    # turn this automated deploy into a *gated* one that waits for a human OK.
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve the version being deployed
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.rollback_to }}" ]; then
+            echo "target=${{ github.event.inputs.rollback_to }}" >> "$GITHUB_OUTPUT"
+            echo "mode=ROLLBACK" >> "$GITHUB_OUTPUT"
+          elif [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "target=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "mode=RELEASE" >> "$GITHUB_OUTPUT"
+          else
+            echo "target=v$(cat VERSION)" >> "$GITHUB_OUTPUT"
+            echo "mode=DEPLOY" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy (mock)
+        run: |
+          echo "Mode:    ${{ steps.version.outputs.mode }}"
+          echo "Version: ${{ steps.version.outputs.target }}"
+          echo "Commit:  ${GITHUB_SHA}"
+          echo "-> In a real pipeline this would sync code/config to your"
+          echo "   orchestrator (Airflow, dbt Cloud, a warehouse, etc.)."
+          echo "   Because deploys are versioned, rolling back is just"
+          echo "   re-running this workflow with an older 'rollback_to' tag."
